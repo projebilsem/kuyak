@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kuzey Yaşam Kılavuzu (KUYAK)</title>
+  <style>
+    :root{
+      --bg:#efefef;
+      --panel:#cfe7f4;
+      --panel2:#bddced;
+      --line:#2f4f68;
+      --btn:#d9d9dd;
+      --send:#3b7dbb;
+      --send-dark:#255b8e;
+      --text:#111;
+      --shadow:0 3px 10px rgba(0,0,0,.08);
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: Arial, Helvetica, sans-serif;
+      background:var(--bg);
+      color:var(--text);
+    }
+    .app{
+      width:100%;
+      max-width:1700px;
+      margin:0 auto;
+      padding:10px 16px 18px;
+    }
+    .title{
+      width:100%;
+      background:var(--panel2);
+      border:2px solid var(--line);
+      border-radius:30px;
+      text-align:center;
+      font-size:3.2rem;
+      font-weight:800;
+      padding:28px 20px;
+      line-height:1.05;
+      box-shadow:var(--shadow);
+      margin-bottom:20px;
+    }
+    .layout{
+      display:grid;
+      grid-template-columns: 1fr 430px;
+      gap:22px;
+      align-items:start;
+      min-height:720px;
+    }
+    .left{
+      display:grid;
+      grid-template-rows:auto 1fr auto;
+      gap:18px;
+      min-height:720px;
+    }
+    .hero{
+      display:grid;
+      grid-template-columns: 220px 1fr;
+      align-items:center;
+      gap:22px;
+      margin-top:8px;
+      min-height:220px;
+    }
+    .bot-wrap{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding-left:12px;
+    }
+    .bot-img{
+      width:180px;
+      height:230px;
+      object-fit:contain;
+      display:block;
+      filter: drop-shadow(0 3px 3px rgba(0,0,0,.08));
+    }
+    .speech{
+      position:relative;
+      background:var(--panel);
+      border:2px solid #4f8ab7;
+      border-radius:34px;
+      min-height:200px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      text-align:center;
+      padding:28px 34px;
+      font-size:2rem;
+      line-height:1.45;
+      box-shadow:var(--shadow);
+    }
+    .speech:before{
+      content:"";
+      position:absolute;
+      left:-56px;
+      bottom:30px;
+      width:0;height:0;
+      border-top:28px solid transparent;
+      border-bottom:28px solid transparent;
+      border-right:56px solid var(--panel);
+      filter:drop-shadow(-1px 0 0 #4f8ab7);
+    }
+    .chat-area{
+      min-height:280px;
+      padding:0 10px 0 26px;
+    }
+    #messages{
+      min-height:220px;
+      max-height:340px;
+      overflow:auto;
+      padding-right:8px;
+    }
+    .msg{
+      background:#f5fbff;
+      border:1.5px solid var(--line);
+      border-radius:18px;
+      padding:12px 14px;
+      margin:10px 0;
+      line-height:1.45;
+      white-space:pre-wrap;
+      box-shadow:var(--shadow);
+      font-size:1.02rem;
+    }
+    .msg.user{ background:#ddeaf4; margin-left:90px; }
+    .msg.bot{ margin-right:90px; }
+    .tag{
+      display:block;
+      font-size:.8rem;
+      font-weight:700;
+      margin-bottom:4px;
+      opacity:.8;
+    }
+    .bottom{
+      display:grid;
+      grid-template-columns: 1fr 230px;
+      gap:18px;
+      align-items:stretch;
+      padding:0 0 0 10px;
+    }
+    .input-box{
+      background:var(--panel2);
+      border:2px solid #4f8ab7;
+      border-radius:30px;
+      min-height:160px;
+      padding:20px 24px;
+      display:flex;
+      align-items:center;
+      box-shadow:var(--shadow);
+    }
+    textarea{
+      width:100%;
+      min-height:110px;
+      resize:none;
+      border:none;
+      outline:none;
+      background:transparent;
+      font-size:1.2rem;
+      font-family:inherit;
+      color:var(--text);
+    }
+    .send-btn{
+      border:2px solid var(--send-dark);
+      background:var(--send);
+      color:#fff6ea;
+      border-radius:26px;
+      min-height:160px;
+      font-size:2rem;
+      font-weight:800;
+      letter-spacing:.5px;
+      cursor:pointer;
+      box-shadow:var(--shadow);
+    }
+    .send-btn:hover{ filter:brightness(1.03); }
+    .right{
+      display:grid;
+      grid-template-rows:auto auto;
+      gap:26px;
+      padding-right:8px;
+    }
+    .list-panel{
+      background:var(--panel2);
+      border:2px solid var(--line);
+      border-radius:34px;
+      padding:26px 28px 24px;
+      min-height:590px;
+      box-shadow:var(--shadow);
+    }
+    .list-title{
+      text-align:center;
+      font-size:2rem;
+      font-weight:800;
+      margin-bottom:10px;
+    }
+    .list-panel ul{
+      list-style:none;
+      padding:0;
+      margin:0;
+      font-size:1.12rem;
+      line-height:1.6;
+      max-height:460px; /* prevents overflow */
+      overflow:auto;   /* scroll if content exceeds box */
+    }
+    .controls{
+      display:grid;
+      gap:20px;
+      padding:0 38px;
+    }
+    .ctrl-btn{
+      background:var(--btn);
+      border:2px solid #4f5f81;
+      border-radius:18px;
+      min-height:78px;
+      font-size:1.55rem;
+      cursor:pointer;
+      box-shadow:var(--shadow);
+    }
+    .ctrl-btn:hover{ background:#e6e6ea; }
+    .quiz-panel{
+      display:none;
+      margin-top:18px;
+      background:#f8fbfd;
+      border:1.6px dashed #6f8494;
+      border-radius:18px;
+      padding:14px;
+    }
+    .quiz-panel.active{ display:block; }
+    .quiz-title{ font-weight:800; line-height:1.4; margin-bottom:8px; }
+    .quiz-answers button{
+      width:100%;
+      display:block;
+      margin:8px 0;
+      text-align:left;
+      padding:10px 12px;
+      border-radius:12px;
+      border:1.2px solid #748692;
+      background:#eef4f8;
+      cursor:pointer;
+      font-size:1rem;
+    }
+    .quiz-status{ margin-top:10px; font-weight:700; }
+    @media (max-width:1200px){
+      .layout{ grid-template-columns:1fr; }
+      .right{ grid-template-columns:1fr; }
+      .list-panel{ min-height:auto; }
+      .controls{ padding:0; grid-template-columns:1fr 1fr; }
+    }
+    @media (max-width:760px){
+      .title{ font-size:2rem; }
+      .hero{ grid-template-columns:1fr; }
+      .bot-wrap{ justify-content:flex-start; }
+      .speech{ font-size:1.35rem; min-height:160px; }
+      .speech:before{ display:none; }
+      .bottom{ grid-template-columns:1fr; }
+      .send-btn{ min-height:84px; font-size:1.4rem; }
+      .controls{ grid-template-columns:1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="title">Kuzey Yaşam Kılavuzu (KUYAK)</div>
+
+    <div class="layout">
+      <section class="left">
+        <div class="hero">
+          <div class="bot-wrap">
+            <img class="bot-img" alt="KUYAK maskotu" src="data:image/svg+xml;utf8,
+            <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 220 280'>
+              <g fill='none' stroke='%23111' stroke-width='6' stroke-linecap='round' stroke-linejoin='round'>
+                <circle cx='110' cy='86' r='54' fill='%23f2f2f2'/>
+                <circle cx='66' cy='56' r='16' fill='%23e9e9e9'/>
+                <circle cx='154' cy='56' r='16' fill='%23e9e9e9'/>
+                <circle cx='66' cy='56' r='8' fill='%23d6d6d6'/>
+                <circle cx='154' cy='56' r='8' fill='%23d6d6d6'/>
+                <rect x='58' y='72' width='104' height='56' rx='24' fill='%23242a31'/>
+                <circle cx='88' cy='98' r='18' fill='%2388c4ea'/>
+                <circle cx='132' cy='98' r='18' fill='%2388c4ea'/>
+                <circle cx='88' cy='98' r='6' fill='%23354d63'/>
+                <circle cx='132' cy='98' r='6' fill='%23354d63'/>
+                <ellipse cx='110' cy='112' rx='22' ry='18' fill='%23f7f7f7'/>
+                <circle cx='110' cy='103' r='6' fill='%23333'/>
+                <path d='M98 117 Q110 126 122 117'/>
+                <path d='M80 142 v22 c0 12 8 18 18 18h24c10 0 18-6 18-18v-22' fill='%23fff'/>
+                <path d='M97 142 v15 c0 7 5 12 13 12s13-5 13-12v-15' fill='%23dfeffc'/>
+                <path d='M90 182 v28 c0 11 8 19 19 19h2c11 0 19-8 19-19v-28' fill='%23fff'/>
+                <path d='M90 210 h40'/>
+                <path d='M87 229 h46'/>
+                <path d='M82 245 h22'/>
+                <path d='M116 245 h22'/>
+                <!-- arms removed so mascot stands neutral -->
+                <line x1='66' y1='30' x2='53' y2='14'/>
+                <line x1='154' y1='30' x2='167' y2='14'/>
+                <circle cx='49' cy='10' r='6' fill='%2346a6db'/>
+                <circle cx='171' cy='10' r='6' fill='%2346a6db'/>
+                <line x1='57' y1='18' x2='46' y2='5'/>
+                <line x1='163' y1='18' x2='174' y2='5'/>
+              </g>
+            </svg>" />
+          </div>
+
+          <div class="speech">
+            Merhaba! Ben Kuzey Yaşam Kılavuzu (KUYAK).<br>
+            Kuzey Kutup bölgesinde yaşayan hayvanlar<br>
+            hakkında bana sorular sorabilirsin.
+          </div>
+        </div>
+
+        <div class="chat-area">
+          <div id="messages" aria-live="polite"></div>
+        </div>
+
+        <div class="bottom">
+          <div class="input-box">
+            <textarea id="userInput" placeholder="Bir hayvan adı veya konu yaz..."></textarea>
+          </div>
+          <button class="send-btn" id="sendBtn">GÖNDER</button>
+        </div>
+      </section>
+
+      <aside class="right">
+        <div class="list-panel">
+          <div class="list-title">Liste:</div>
+          <ul>
+            <li>Beyaz Tilki (Arktik Tilkisi)</li>
+            <li>Kar Baykuşu</li>
+            <li>Kutup Ayısı</li>
+            <li>Kutup Kurdu (Arktik Kurdu)</li>
+            <li>Kutup tavşanı (Arktik tavşanı)</li>
+            <li>Kutup Sumrusu</li>
+            <li>Fok</li>
+            <li>Misk Öküzü</li>
+            <li>Mors (Deniz Aygırı)</li>
+            <li>Narval (Deniz Gergedanı)</li>
+            <li>Pufla</li>
+            <li>Ren Geyiği</li>
+          </ul>
+
+          <div class="quiz-panel" id="quizPanel">
+            <div class="quiz-title" id="quizQuestion">Soru burada görünecek.</div>
+            <div class="quiz-answers" id="quizAnswers"></div>
+            <div class="quiz-status" id="quizStatus"></div>
+          </div>
+        </div>
+
+        <div class="controls">
+          <button class="ctrl-btn" id="resetBtn">Sohbeti sıfırla</button>
+          <button class="ctrl-btn" id="quizBtn">Quiz başlat</button>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <script>
+    const animalData = {
+      "beyaz tilki": {
+        aliases:["arktik tilkisi","kutup tilkisi","kar tilkisi"],
+        name:"Beyaz Tilki (Arktik Tilkisi)",
+        info:{
+          "hayatta kalma stratejileri":"Yoğun çok katmanlı kürkü, tüylü ayakları, kısa kulak ve burnu sayesinde ısı kaybını azaltır. Kuyruğunu vücuduna dolayarak soğuktan korunur.",
+          "besin yönetimi":"Küçük hayvanlar, kuşlar ve balıklarla beslenir. Yiyecek azaldığında leşten yararlanabilir ve besin saklayabilir.",
+          "kamuflaj ve uyum":"Beyaz kürkü karla uyum sağlar. Kompakt vücudu ve tüylü ayakları buzlu zeminde hareketi kolaylaştırır.",
+          "sessizlik ve enerji yönetimi":"Gereksiz hareket etmeden enerji korur. Güçlü yalıtımı sayesinde düşük sıcaklıklarda dayanıklıdır.",
+          "riskten kaçınma":"Koku alma duyusuyla tehlikeyi ve besini uzaktan fark edebilir.",
+          "yön bulma ve alan okuma":"Koku alma ve işitme duyuları gelişmiştir; kar altındaki avı bile bulabilir.",
+          "göç ve hareket stratejileri":"Besin durumuna göre hareket alanını değiştirir, uzun mesafelerde iz takip edebilir.",
+          "topluluk ve iş birliği":"Genellikle aile düzeninde yaşar; yavru bakımında ebeveynler rol alabilir."
+        }
+      },
+      "kar baykusu": {
+        aliases:["kar baykuşu","baykuş","baykus"],
+        name:"Kar Baykuşu",
+        info:{
+          "hayatta kalma stratejileri":"Beyaz tüyleri ve tüylü pençeleri kutup soğuğuna uyum sağlar.",
+          "besin yönetimi":"Başlıca kuzey fareleriyle beslenir; besin azlığında farklı avlara yönelebilir.",
+          "kamuflaj ve uyum":"Beyaz tüyleri kar zeminiyle uyumludur ve saklanmasına yardım eder.",
+          "sessizlik ve enerji yönetimi":"Sessiz uçuşu sayesinde avına yaklaşırken enerji kaybını azaltır.",
+          "riskten kaçınma":"Açık alanlarda yüksek yerlerden çevreyi izleyerek tehlikeyi erken fark eder.",
+          "yön bulma ve alan okuma":"Güçlü duyuları ile açık tundrayı ve av hareketlerini iyi okur.",
+          "göç ve hareket stratejileri":"Besin durumuna göre kuzeyde kalabilir ya da farklı alanlara hareket edebilir.",
+          "topluluk ve iş birliği":"Üreme döneminde erkek besin taşır, dişi kuluçkaya yatar."
+        }
+      },
+      "kutup ayisi": {
+        aliases:["kutup ayısı","ayı","ayi"],
+        name:"Kutup Ayısı",
+        info:{
+          "hayatta kalma stratejileri":"Kalın yağ tabakası ve yoğun kürküyle buzlu ortamda yaşar; karada ve suda güçlüdür.",
+          "besin yönetimi":"En çok fok avlar. Nefes deliklerinde uzun süre bekleyerek verimli avlanır.",
+          "kamuflaj ve uyum":"Açık renkli kürkü kar ve buzla uyum sağlar.",
+          "sessizlik ve enerji yönetimi":"Sabırla bekleyerek avlanır; gereksiz hareketten kaçınır.",
+          "riskten kaçınma":"Geniş alanlarda koku izlerini takip ederek çevreyi okuyabilir.",
+          "yön bulma ve alan okuma":"Güçlü koku alma duyusuyla fok deliklerini ve hareket yollarını bulur.",
+          "göç ve hareket stratejileri":"Deniz buzlarına bağlı olarak uzun mesafeler yürür ve yüzer.",
+          "topluluk ve iş birliği":"Genelde yalnız yaşar; anne-yavru bağı güçlüdür."
+        }
+      },
+      "kutup kurdu": {
+        aliases:["arktik kurdu","beyaz kurt"],
+        name:"Kutup Kurdu (Arktik Kurdu)",
+        info:{
+          "hayatta kalma stratejileri":"Kalın kürkü ve tüylü ayakları sayesinde soğukta yaşayabilir.",
+          "besin yönetimi":"Arktik tavşanı, misk öküzü ve ren geyiği gibi hayvanlarla beslenir.",
+          "kamuflaj ve uyum":"Açık renkli kürkü karla uyum sağlar.",
+          "sessizlik ve enerji yönetimi":"Küçük avlarda yalnız, büyük avlarda sürü hâlinde hareket ederek enerji dengesi kurar.",
+          "riskten kaçınma":"Sürü düzeni tehlikeyi birlikte değerlendirmeyi sağlar.",
+          "yön bulma ve alan okuma":"Araziyi ve av davranışını okuyarak yön belirler.",
+          "göç ve hareket stratejileri":"Avın durumuna göre geniş alanlarda dolaşır.",
+          "topluluk ve iş birliği":"Sürü hâlinde yaşar, birlikte avlanır ve yavruları korur."
+        }
+      },
+      "kutup tavsani": {
+        aliases:["kutup tavşanı","arktik tavşanı","tavşan","tavsan"],
+        name:"Kutup tavşanı (Arktik tavşanı)",
+        info:{
+          "hayatta kalma stratejileri":"Kalın kürkü, tüylü patileri ve hızlı koşma becerisi ile yaşar.",
+          "besin yönetimi":"Çoğunlukla bitkilerle beslenir; zor koşullarda fırsatçı davranabilir.",
+          "kamuflaj ve uyum":"Kışın beyaz, mevsim geçişlerinde daha koyu tonlara yaklaşan kürkü vardır.",
+          "sessizlik ve enerji yönetimi":"Kar altına girerek fırtınadan korunur ve enerji kaybını azaltır.",
+          "riskten kaçınma":"Hızlı koşar ve saklanır; grup hâlinde bulununca korunma şansı artar.",
+          "yön bulma ve alan okuma":"Koku alma duyusuyla kar altındaki besini bulur.",
+          "göç ve hareket stratejileri":"Yerel koşullara göre korunmalı alanlara yönelir.",
+          "topluluk ve iş birliği":"Kışın çok sayıda birey bir araya gelebilir."
+        }
+      },
+      "kutup sumrusu": {
+        aliases:["sumru"],
+        name:"Kutup Sumrusu",
+        info:{
+          "hayatta kalma stratejileri":"Çevik yapısı ve uzun kanatları sayesinde zorlu göçleri başarır.",
+          "besin yönetimi":"Küçük balıklar ve deniz omurgasızlarıyla beslenir.",
+          "kamuflaj ve uyum":"Açık renkli gövdesi ve deniz kuşu yapısı çevreye uygundur.",
+          "sessizlik ve enerji yönetimi":"Uzun göçler için beslenme alanlarını verimli kullanır.",
+          "riskten kaçınma":"Koloni düzeni savunma avantajı sağlar.",
+          "yön bulma ve alan okuma":"Kıyı çizgileri ve uygun deniz alanlarını takip eder.",
+          "göç ve hareket stratejileri":"Arktik ile Antarktika arasında çok uzun göçler yapar.",
+          "topluluk ve iş birliği":"Üreme döneminde koloni yaşamı görülür."
+        }
+      },
+      "fok": {
+        aliases:["halkalı fok","seal"],
+        name:"Fok",
+        info:{
+          "hayatta kalma stratejileri":"Nefes deliklerini kullanır, yavrularını kar altı inlerde korur.",
+          "besin yönetimi":"Balıklar ve küçük deniz canlılarıyla beslenir; yağ depolar.",
+          "kamuflaj ve uyum":"Deniz ve buz ortamına uyumlu vücut yapısı vardır.",
+          "sessizlik ve enerji yönetimi":"Su ve buz arasında dengeli zaman geçirir.",
+          "riskten kaçınma":"Birden fazla nefes deliği kullanarak kaçış şansı artırır.",
+          "yön bulma ve alan okuma":"Buz yapısını ve güvenli geçiş noktalarını kullanır.",
+          "göç ve hareket stratejileri":"Bazı popülasyonları mevsimsel hareket eder.",
+          "topluluk ve iş birliği":"Anne-yavru ilişkisi belirgindir."
+        }
+      },
+      "misk okuzu": {
+        aliases:["misk öküzü","misk okuzu"],
+        name:"Misk Öküzü",
+        info:{
+          "hayatta kalma stratejileri":"Kalın kürkü ve güçlü gövdesi soğuğa dayanmasını sağlar.",
+          "besin yönetimi":"Ot, liken, yosun ve tundra bitkileriyle beslenir.",
+          "kamuflaj ve uyum":"Kahverengi-gri tonları tundra alanlarına uyum sağlar.",
+          "sessizlik ve enerji yönetimi":"Sürü, hareketini planlı yaparak enerji dengesi kurar.",
+          "riskten kaçınma":"Tehlikede yavruları ortaya alıp halka oluştururlar.",
+          "yön bulma ve alan okuma":"Korunaklı ve besin açısından uygun alanları seçerler.",
+          "göç ve hareket stratejileri":"Sürüler hâlinde uygun alanlara hareket ederler.",
+          "topluluk ve iş birliği":"Sürü yaşamı çok belirgindir; birlikte savunma yaparlar."
+        }
+      },
+      "mors": {
+        aliases:["deniz aygırı","deniz aygiri"],
+        name:"Mors (Deniz Aygırı)",
+        info:{
+          "hayatta kalma stratejileri":"Kalın deri, yağ tabakası ve güçlü dişleriyle soğuk denizlerde yaşar.",
+          "besin yönetimi":"Deniz tabanındaki küçük canlıları bıyıklarıyla bulur.",
+          "kamuflaj ve uyum":"Buz ve kıyı yaşamına uygun güçlü bir vücut yapısı vardır.",
+          "sessizlik ve enerji yönetimi":"Dalış sürelerini ve dinlenme zamanlarını dengeler.",
+          "riskten kaçınma":"Büyük dişleri savunmada kullanılır; grup yaşamı koruma sağlar.",
+          "yön bulma ve alan okuma":"Bıyıkları sayesinde deniz tabanını ayrıntılı biçimde tarar.",
+          "göç ve hareket stratejileri":"Buz ve beslenme alanlarına göre yer değiştirir.",
+          "topluluk ve iş birliği":"Kalabalık gruplar oluşturabilir."
+        }
+      },
+      "narval": {
+        aliases:["deniz gergedanı","deniz gergedani"],
+        name:"Narval (Deniz Gergedanı)",
+        info:{
+          "hayatta kalma stratejileri":"Derin dalış yapabilmesi ve buzlu alanlarda yaşayabilmesi önemlidir.",
+          "besin yönetimi":"Morina, kalkan ve kalamar gibi canlılarla beslenir.",
+          "kamuflaj ve uyum":"Benekli gövdesi kuzey deniz yaşamına uyumludur.",
+          "sessizlik ve enerji yönetimi":"Uzun dalışlarla uygun zamanda beslenir.",
+          "riskten kaçınma":"Yoğun buzlu alanlarda yaşaması bir koruma avantajı sağlar.",
+          "yön bulma ve alan okuma":"Çevresel değişimleri algılayabildiği düşünülür.",
+          "göç ve hareket stratejileri":"Yazın koylarda, kışın daha derin sularda bulunur.",
+          "topluluk ve iş birliği":"Küçük gruplar hâlinde yaşar."
+        }
+      },
+      "pufla": {
+        aliases:["eider"],
+        name:"Pufla",
+        info:{
+          "hayatta kalma stratejileri":"Yoğun tüyleri güçlü bir ısı yalıtımı sağlar.",
+          "besin yönetimi":"Deniz dibindeki midye ve kabuklularla beslenir.",
+          "kamuflaj ve uyum":"Yuvalarını tüyleriyle yalıtarak sıcak tutar.",
+          "sessizlik ve enerji yönetimi":"Kuluçka döneminde enerji kullanımını dikkatle dengeler.",
+          "riskten kaçınma":"Yavrular kreş benzeri gruplar içinde korunabilir.",
+          "yön bulma ve alan okuma":"Göçte kıyıları takip edebilir.",
+          "göç ve hareket stratejileri":"Sert kışlarda daha güneye hareket edebilir.",
+          "topluluk ve iş birliği":"Koloni hâlinde ürer, yavru korumada iş birliği görülebilir."
+        }
+      },
+      "ren geyigi": {
+        aliases:["ren geyiği","karibu","ren geyigi"],
+        name:"Ren Geyiği",
+        info:{
+          "hayatta kalma stratejileri":"Mevsime göre değişen toynak yapısı ve güçlü vücuduyla kutup koşullarına uyum sağlar.",
+          "besin yönetimi":"Kışın liken, yazın yaprak, mantar ve tundra bitkileriyle beslenir.",
+          "kamuflaj ve uyum":"Kürkü yaşadığı bölgeye ve mevsime göre ton değiştirebilir.",
+          "sessizlik ve enerji yönetimi":"Uzun göçlerde düzenli hareket ederek dayanıklılığını korur.",
+          "riskten kaçınma":"Sürü yaşamı yırtıcılara karşı koruma sağlar.",
+          "yön bulma ve alan okuma":"Toynaklarıyla karı kazıp likene ulaşır, göç yollarını takip eder.",
+          "göç ve hareket stratejileri":"Bazı sürüler çok uzun göçler yapar.",
+          "topluluk ve iş birliği":"Sürü düzeni hem korunma hem hareket açısından önemlidir."
+        }
+      }
+    };
+
+    const themes = [
+      "hayatta kalma stratejileri",
+      "besin yönetimi",
+      "kamuflaj ve uyum",
+      "sessizlik ve enerji yönetimi",
+      "riskten kaçınma",
+      "yön bulma ve alan okuma",
+      "göç ve hareket stratejileri",
+      "topluluk ve iş birliği"
+    ];
+
+    const quizQuestions = [
+      { q:"Hangi hayvan, yavruları ortaya alıp halka oluşturarak savunma yapar?", options:["Misk Öküzü","Narval","Kar Baykuşu","Pufla"], answer:"Misk Öküzü" },
+      { q:"Hangi tür, Arktik ile Antarktika arasında çok uzun göçler yapar?", options:["Kutup Sumrusu","Fok","Pufla","Beyaz Tilki"], answer:"Kutup Sumrusu" },
+      { q:"Hangi hayvan nefes deliklerinde uzun süre bekleyerek avlanır?", options:["Kutup Ayısı","Ren Geyiği","Kar Baykuşu","Narval"], answer:"Kutup Ayısı" },
+      { q:"Hangi hayvan deniz tabanındaki besinleri bıyıklarıyla bulur?", options:["Mors","Pufla","Kutup Kurdu","Fok"], answer:"Mors" }
+    ];
+
+    const messages = document.getElementById('messages');
+    const userInput = document.getElementById('userInput');
+    const sendBtn = document.getElementById('sendBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const quizBtn = document.getElementById('quizBtn');
+    const quizPanel = document.getElementById('quizPanel');
+    const quizQuestion = document.getElementById('quizQuestion');
+    const quizAnswers = document.getElementById('quizAnswers');
+    const quizStatus = document.getElementById('quizStatus');
+
+    let quizIndex = 0, quizScore = 0;
+
+    function addMessage(text, sender='bot'){
+      const div = document.createElement('div');
+      div.className = `msg ${sender}`;
+      const tag = document.createElement('span');
+      tag.className = 'tag';
+      tag.textContent = sender === 'bot' ? 'KUYAK' : 'Sen';
+      div.appendChild(tag);
+      div.appendChild(document.createTextNode(text));
+      messages.appendChild(div);
+      messages.scrollTop = messages.scrollHeight;
+    }
+
+    function normalize(text){
+      return text.toLowerCase()
+        .replace(/ı/g,'i').replace(/ğ/g,'g').replace(/ü/g,'u')
+        .replace(/ş/g,'s').replace(/ö/g,'o').replace(/ç/g,'c').trim();
+    }
+
+    function findAnimal(input){
+      const n = normalize(input);
+      for(const key in animalData){
+        if(n.includes(normalize(key))) return animalData[key];
+        for(const alias of animalData[key].aliases){
+          if(n.includes(normalize(alias))) return animalData[key];
+        }
+      }
+      return null;
+    }
+
+    function findTheme(input){
+      const n = normalize(input);
+      for(const theme of themes){
+        if(n.includes(normalize(theme))) return theme;
+      }
+      const map = {
+        "hayatta kalma":"hayatta kalma stratejileri",
+        "beslenme":"besin yönetimi",
+        "besin":"besin yönetimi",
+        "kamuflaj":"kamuflaj ve uyum",
+        "uyum":"kamuflaj ve uyum",
+        "sessizlik":"sessizlik ve enerji yönetimi",
+        "enerji":"sessizlik ve enerji yönetimi",
+        "risk":"riskten kaçınma",
+        "yon bulma":"yön bulma ve alan okuma",
+        "alan okuma":"yön bulma ve alan okuma",
+        "goc":"göç ve hareket stratejileri",
+        "hareket":"göç ve hareket stratejileri",
+        "topluluk":"topluluk ve iş birliği",
+        "is birligi":"topluluk ve iş birliği",
+        "suru":"topluluk ve iş birliği"
+      };
+      for(const k in map){ if(n.includes(k)) return map[k]; }
+      return null;
+    }
+
+    function showAnimalSummary(animal){
+      let out = animal.name + "\n\n";
+      themes.forEach(theme => {
+        out += "• " + theme.charAt(0).toUpperCase() + theme.slice(1) + ": " + animal.info[theme] + "\n";
+      });
+      return out.trim();
+    }
+
+    function answerUser(input){
+      const n = normalize(input);
+      if(!n) return "Lütfen bir hayvan adı veya konu yaz. Örnek: 'Kutup ayısı besin yönetimi'.";
+      if(n.includes('liste')) return "Listede şu hayvanlar var: Beyaz Tilki, Kar Baykuşu, Kutup Ayısı, Kutup Kurdu, Kutup tavşanı, Kutup Sumrusu, Fok, Misk Öküzü, Mors, Narval, Pufla, Ren Geyiği.";
+      if(n.includes('konular') || n.includes('tema')) return "Sorabileceğin başlıklar: Hayatta Kalma Stratejileri, Besin Yönetimi, Kamuflaj ve Uyum, Sessizlik ve Enerji Yönetimi, Riskten Kaçınma, Yön Bulma ve Alan Okuma, Göç ve Hareket Stratejileri, Topluluk ve İş Birliği.";
+
+      const animal = findAnimal(input);
+      const theme = findTheme(input);
+      if(animal && theme) return animal.name + " — " + theme.charAt(0).toUpperCase() + theme.slice(1) + ":\n" + animal.info[theme];
+      if(animal) return showAnimalSummary(animal);
+      if(theme) return "Bu başlık için bir hayvan adı da yazmalısın. Örnek: 'Mors besin yönetimi'.";
+      return "Bir hayvan adı yazabilir veya örneğin 'Ren geyiği göç', 'Kar baykuşu kamuflaj', 'liste' gibi sorular sorabilirsin.";
+    }
+
+    function handleSend(){
+      const text = userInput.value.trim();
+      if(!text) return;
+      addMessage(text, 'user');
+      const reply = answerUser(text);
+      setTimeout(() => addMessage(reply, 'bot'), 140);
+      userInput.value = '';
+    }
+
+    function resetChat(){
+      messages.innerHTML = '';
+      quizPanel.classList.remove('active');
+      quizIndex = 0; quizScore = 0;
+      quizStatus.textContent = '';
+      addMessage("Sohbet sıfırlandı. Yeniden başlayabilirsin.", 'bot');
+    }
+
+    function renderQuiz(){
+      if(quizIndex >= quizQuestions.length){
+        quizQuestion.textContent = 'Quiz tamamlandı!';
+        quizAnswers.innerHTML = '';
+        quizStatus.textContent = `Puanın: ${quizScore} / ${quizQuestions.length}`;
+        addMessage(`Quiz bitti. Puanın ${quizScore} / ${quizQuestions.length}.`, 'bot');
+        return;
+      }
+      const current = quizQuestions[quizIndex];
+      quizQuestion.textContent = `Soru ${quizIndex+1}: ${current.q}`;
+      quizAnswers.innerHTML = '';
+      quizStatus.textContent = `Puan: ${quizScore}`;
+      current.options.forEach(opt => {
+        const b = document.createElement('button');
+        b.textContent = opt;
+        b.onclick = () => {
+          quizStatus.textContent = opt === current.answer ? 'Doğru!' : `Yanlış. Doğru cevap: ${current.answer}`;
+          if(opt === current.answer) quizScore++;
+          setTimeout(() => { quizIndex++; renderQuiz(); }, 650);
+        };
+        quizAnswers.appendChild(b);
+      });
+    }
+
+    function startQuiz(){
+      quizIndex = 0; quizScore = 0;
+      quizPanel.classList.add('active');
+      renderQuiz();
+      addMessage("Quiz başladı! Sağ taraftaki bölümden cevaplayabilirsin.", 'bot');
+    }
+
+    sendBtn.addEventListener('click', handleSend);
+    resetBtn.addEventListener('click', resetChat);
+    quizBtn.addEventListener('click', startQuiz);
+    userInput.addEventListener('keydown', (e) => {
+      if(e.key === 'Enter' && !e.shiftKey){
+        e.preventDefault();
+        handleSend();
+      }
+    });
+
+    addMessage("Hazırım! Bir hayvan adı ya da konu yazabilirsin.", 'bot');
+  </script>
+</body>
+</html>

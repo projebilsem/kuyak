@@ -68,7 +68,9 @@
     .side-col{display:grid;gap:10px;grid-template-rows:auto auto}
     .list-card,.panel{border-radius:22px;padding:10px}
     .animal-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
-    .animal-item{border-radius:15px;padding:8px 10px;background:linear-gradient(180deg, rgba(255,255,255,.95) 0%, rgba(241,245,251,.95) 100%);box-shadow:var(--shadow-soft);border:1px solid rgba(76,125,255,.10);display:flex;align-items:center;justify-content:center;font-size:.74rem;font-weight:700;color:var(--text);text-align:center;}
+    .animal-item{border-radius:15px;padding:8px 10px;background:linear-gradient(180deg, rgba(255,255,255,.95) 0%, rgba(241,245,251,.95) 100%);box-shadow:var(--shadow-soft);border:1px solid rgba(76,125,255,.10);display:flex;align-items:center;justify-content:center;font-size:.74rem;font-weight:700;color:var(--text);text-align:center;cursor:pointer;transition:background .15s,border-color .15s,transform .12s;}
+    .animal-item:hover{background:linear-gradient(180deg,#e8f0ff,#d6e6ff);border-color:rgba(76,125,255,.35);transform:translateY(-1px);}
+    .animal-item.selected{background:linear-gradient(180deg,#4c7dff,#69a0ff);color:#fff;border-color:#4c7dff;}
     .note{position:relative;z-index:1;padding:8px 4px 0;font-size:.67rem;color:#5f6b77;text-align:center}
     .quiz-modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;z-index:999}
     .quiz-box{background:white;border-radius:20px;padding:20px;width:320px;max-width:90%;box-shadow:0 20px 40px rgba(0,0,0,.2)}
@@ -77,6 +79,13 @@
     .quiz-question{font-weight:700;margin-bottom:10px}
     .quiz-options{display:flex;flex-direction:column;gap:6px}
     .quiz-status{margin-top:10px;font-size:12px;color:#555}
+    .topic-bar{display:flex;flex-wrap:wrap;gap:6px;padding:6px 2px 2px;}
+    .topic-btn{border:1.5px solid rgba(76,125,255,.25);border-radius:999px;background:rgba(76,125,255,.07);color:#2f63d6;font-size:.67rem;font-weight:700;padding:5px 11px;cursor:pointer;transition:background .14s,border-color .14s,transform .12s;white-space:nowrap;}
+    .topic-btn:hover{background:rgba(76,125,255,.16);border-color:rgba(76,125,255,.45);transform:translateY(-1px);}
+    .quiz-opt-correct{background:linear-gradient(135deg,#27ae60,#2ecc71)!important;color:#fff!important;}
+    .quiz-opt-wrong{background:linear-gradient(135deg,#c0392b,#e74c3c)!important;color:#fff!important;}
+    .quiz-opt-disabled{pointer-events:none;opacity:.7;}
+    .quiz-result-msg{margin-top:10px;font-size:13px;font-weight:700;text-align:center;padding:8px;border-radius:10px;}
     @media (max-width:900px){.hero{grid-template-columns:110px 1fr}.layout{grid-template-columns:1fr}}
     @media (max-width:640px){.app{padding:8px}.shell{padding:10px;border-radius:24px}.title{font-size:1.1rem;padding:12px 10px}.hero{grid-template-columns:1fr}.speech::before{display:none}.animal-grid{grid-template-columns:1fr}.input-wrap{grid-template-columns:1fr}.msg.user{margin-left:16px}.msg.bot{margin-right:16px}}
   </style>
@@ -107,10 +116,12 @@
         <div class="chat-card">
           <div class="chat-head"><h3>KUYAK Sohbet Alanı</h3><div class="badge">Öğrenci Dostu</div></div>
           <div class="messages" id="messages"></div>
+          <div class="topic-bar" id="topicBar"></div>
           <div class="input-wrap">
             <textarea id="userInput" placeholder="Örn: kutup ayısı besin yönetimi, narval göç, beyaz tilki kamuflaj..."></textarea>
             <button class="action-btn" id="sendBtn">GÖNDER</button>
           </div>
+          <button class="action-btn" id="resetBtn" style="background:linear-gradient(135deg,#6c7a89,#95a5a6);width:100%;margin-top:4px;">SOHBETİ SIFIRLA</button>
         </div>
         <div class="side-col">
           <div class="list-card">
@@ -119,7 +130,6 @@
           </div>
           <div class="panel" style="display:flex;gap:8px;flex-direction:column">
             <button class="action-btn" id="quizBtn">QUIZ BAŞLAT</button>
-            <button class="action-btn" id="resetBtn" style="background:linear-gradient(135deg,#6c7a89,#95a5a6)">SOHBETİ SIFIRLA</button>
           </div>
         </div>
       </section>
@@ -157,7 +167,8 @@
 
     const themes = ['hayatta kalma stratejileri','besin yönetimi','kamuflaj ve uyum','sessizlik ve enerji yönetimi','riskten kaçınma','yön bulma ve alan okuma','göç ve hareket stratejileri','topluluk ve iş birliği'];
     const topicMap = {'hayatta kalma stratejileri':'Hayatta Kalma','besin yönetimi':'Besin Yönetimi','kamuflaj ve uyum':'Kamuflaj','sessizlik ve enerji yönetimi':'Sessizlik','riskten kaçınma':'Riskten Kaçınma','yön bulma ve alan okuma':'Yön Bulma','göç ve hareket stratejileri':'Göç','topluluk ve iş birliği':'İş Birliği'};
-    let selectedAnimal = 'kutup ayısı';
+    // DÜZELTME 1: Başlangıçta seçili hayvan yok; alakasız sorularda kutup ayısı gösterilmeyecek
+    let selectedAnimal = null;
 
     const messages = document.getElementById('messages');
     const userInput = document.getElementById('userInput');
@@ -176,15 +187,37 @@
     function normalize(text){
       return text.toLowerCase().replace(/ı/g,'i').replace(/ğ/g,'g').replace(/ü/g,'u').replace(/ş/g,'s').replace(/ö/g,'o').replace(/ç/g,'c').trim();
     }
+    // DÜZELTME 5: XSS güvenliği — kullanıcı girdisi innerHTML'e gitmeden önce escape edilir
+    function escapeHtml(text){
+      const d = document.createElement('div');
+      d.textContent = text;
+      return d.innerHTML;
+    }
     function addMessage(text, sender='bot'){
       const div = document.createElement('div');
       div.className = `msg ${sender}`;
-      div.innerHTML = `<span class="tag">${sender === 'bot' ? 'KUYAK' : 'Sen'}</span>${text}`;
+      const safeText = sender === 'user' ? escapeHtml(text) : text;
+      div.innerHTML = `<span class="tag">${sender === 'bot' ? 'KUYAK' : 'Sen'}</span>${safeText}`;
       messages.appendChild(div);
       messages.scrollTop = messages.scrollHeight;
     }
+    // DÜZELTME 2: Hayvan listesi tıklanabilir; seçilen hayvan vurgulanır
     function renderAnimals(){
-      animalGrid.innerHTML = Object.values(animalData).map(val => `<div class="animal-item">${val.label}</div>`).join('');
+      animalGrid.innerHTML = '';
+      Object.entries(animalData).forEach(([key, val]) => {
+        const item = document.createElement('div');
+        item.className = 'animal-item' + (selectedAnimal === key ? ' selected' : '');
+        item.textContent = val.label;
+        item.dataset.key = key;
+        item.addEventListener('click', () => {
+          selectedAnimal = key;
+          renderAnimals();
+          addMessage(`<strong>${val.label}</strong> seçildi. Bir konu yazarsan o konuyu, yoksa genel bilgiyi gösteririm.`, 'bot');
+          extraNote.textContent = `Seçili hayvan: ${val.label}`;
+          messages.scrollTop = messages.scrollHeight;
+        });
+        animalGrid.appendChild(item);
+      });
     }
     function findAnimal(text){
       const n = normalize(text);
@@ -194,6 +227,7 @@
       }
       return null;
     }
+    // DÜZELTME 6: Normalize tutarsızlığı giderildi — "işbirliği" (boşluksuz) de artık eşleşir
     function findTheme(text){
       const n = normalize(text);
       for(const theme of themes){ if(n.includes(normalize(theme))) return theme; }
@@ -204,7 +238,7 @@
       if(n.includes('risk')) return 'riskten kaçınma';
       if(n.includes('yon bulma') || n.includes('alan okuma')) return 'yön bulma ve alan okuma';
       if(n.includes('goc') || n.includes('hareket')) return 'göç ve hareket stratejileri';
-      if(n.includes('is birligi') || n.includes('topluluk') || n.includes('suru')) return 'topluluk ve iş birliği';
+      if(n.includes('is birligi') || n.includes('isbirligi') || n.includes('topluluk') || n.includes('suru')) return 'topluluk ve iş birliği';
       return null;
     }
     function summaryForAnimal(animal){
@@ -222,8 +256,13 @@
       const animalKey = findAnimal(text) || selectedAnimal;
       const theme = findTheme(text);
       const animal = animalData[animalKey];
-      if(!animal) return 'Lütfen bir hayvan adı yazın.';
+      // DÜZELTME 1: Hayvan bulunamazsa artık kutup ayısına düşmek yerine açıklayıcı hata döner
+      if(!animal){
+        if(theme) return `Hangi hayvan için bilgi almak istiyorsun? Listeden bir hayvan seç ya da hayvan adını yaz. (Konu: <em>${topicMap[theme]}</em>)`;
+        return 'Bir hayvan adı ya da konu yazmalısın. Örnek: "kutup ayısı besin yönetimi" veya sadece "narval".';
+      }
       selectedAnimal = animalKey;
+      renderAnimals();
       if(theme){ return `<strong>${animal.label}</strong> — <strong>${topicMap[theme]}</strong><br>${animal.info[theme]}`; }
       return summaryForAnimal(animal);
     }
@@ -236,16 +275,37 @@
       extraNote.textContent = 'Soru yanıtlandı.';
     }
 
+    // DÜZELTME 4: Quiz soruları artırıldı (3→10), tüm cevaplar artık farklı konumlarda
     const quizData = [
-      {q:'Hangi hayvan yavruları ortaya alarak halka oluşturur?', options:['Misk Öküzü','Narval','Kar Baykuşu','Pufla'], a:0},
-      {q:'Hangi tür Arktik ile Antarktika arasında uzun göç yapar?', options:['Kutup Sumrusu','Fok','Mors','Beyaz Tilki'], a:0},
-      {q:'Hangi hayvan nefes deliklerinde bekleyerek avlanır?', options:['Kutup Ayısı','Ren Geyiği','Kar Baykuşu','Narval'], a:0}
+      {q:'Hangi hayvan yavruları ortaya alarak halka savunması oluşturur?', options:['Narval','Misk Öküzü','Kar Baykuşu','Pufla'], a:1},
+      {q:'Hangi tür Arktik ile Antarktika arasında yılda bir göç yapar?', options:['Fok','Mors','Beyaz Tilki','Kutup Sumrusu'], a:3},
+      {q:'Hangi hayvan fok nefes deliklerinde pusu kurarak avlanır?', options:['Ren Geyiği','Kar Baykuşu','Kutup Ayısı','Narval'], a:2},
+      {q:'Beyaz Tilki kışın hangi davranışla enerji tasarrufu sağlar?', options:['Göç eder','Kış uykusuna yatar','Gereksiz hareket etmez','Sürü kurar'], a:2},
+      {q:'Narvalın uzun dişinin işlevi hakkında ne düşünülmektedir?', options:['Av yakalamak','Çevresel değişimleri algılamak','Buz kırmak','Dişi çekmek'], a:1},
+      {q:'Hangi hayvan kar altındaki likeni toynaklarıyla kazarak bulur?', options:['Kutup Kurdu','Mors','Ren Geyiği','Kutup Tavşanı'], a:2},
+      {q:'Pufla kuluçkada dişi ne kadar süre beslenmeden kalabilir?', options:['Hiç kalamaz','Sadece bir gün','Uzun süre kalabilir','Erkek besler onu'], a:2},
+      {q:'Mors deniz tabanındaki besinleri nasıl bulur?', options:['Gözleriyle','Kulağıyla','Hassas bıyıklarıyla','Elektrik algısıyla'], a:2},
+      {q:'Kar Baykuşu yuvasını nereye yapar?', options:['Ağaç kovuklarına','Geniş düzlüklerdeki yükseltilere','Buz mağaralarına','Su kenarlarına'], a:1},
+      {q:'Kutup Tavşanı kış aylarında nasıl koruma sağlar?', options:['Göç eder','Yalnız yaşar','Binlerce bireylik kalabalık oluşturur','Mağaraya çekilir'], a:2}
     ];
     let quizIndex = 0;
     let quizScore = 0;
+    let shuffledQuiz = [];
+
+    function shuffleArray(arr){
+      const a = [...arr];
+      for(let i = a.length - 1; i > 0; i--){
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
+    }
+
     function openQuiz(){
       quizIndex = 0;
       quizScore = 0;
+      // Her oyunda sorular karıştırılır
+      shuffledQuiz = shuffleArray(quizData);
       quizModal.style.display = 'flex';
       renderQuiz();
     }
@@ -253,25 +313,43 @@
       quizModal.style.display = 'none';
     }
     function renderQuiz(){
-      if(quizIndex >= quizData.length){
+      if(quizIndex >= shuffledQuiz.length){
+        const total = shuffledQuiz.length;
+        const pct = quizScore / total;
+        let msg, bg;
+        if(pct === 1)         { msg = '🏆 Mükemmel! Gerçek bir kutupçusun!'; bg='#27ae60'; }
+        else if(pct >= 0.8)   { msg = '🎉 Harika! Çok az eksiğin var.'; bg='#2980b9'; }
+        else if(pct >= 0.6)   { msg = '👍 İyi iş! Biraz daha pratik yapabilirsin.'; bg='#8e44ad'; }
+        else if(pct >= 0.4)   { msg = '🐧 Fena değil ama kutup seni bekliyor!'; bg='#e67e22'; }
+        else                  { msg = '❄️ Çalışmaya devam! Kutup sırları seni bekliyor.'; bg='#c0392b'; }
         quizQuestionEl.textContent = 'Quiz tamamlandı!';
         quizOptionsEl.innerHTML = '';
-        quizStatusEl.textContent = `Puan: ${quizScore} / ${quizData.length}`;
+        quizStatusEl.innerHTML = `<div class="quiz-result-msg" style="background:${bg};color:#fff">${msg}</div>
+          <div style="margin-top:6px;text-align:center;font-size:13px">Puan: <strong>${quizScore} / ${total}</strong></div>`;
         return;
       }
-      const q = quizData[quizIndex];
-      quizQuestionEl.textContent = `Soru ${quizIndex + 1}: ${q.q}`;
+      const q = shuffledQuiz[quizIndex];
+      quizQuestionEl.textContent = `Soru ${quizIndex + 1} / ${shuffledQuiz.length}: ${q.q}`;
       quizOptionsEl.innerHTML = '';
-      quizStatusEl.textContent = `Puan: ${quizScore}`;
+      quizStatusEl.innerHTML = `Puan: ${quizScore}`;
       q.options.forEach((opt, i) => {
         const btn = document.createElement('button');
         btn.className = 'action-btn';
         btn.style.fontSize = '0.72rem';
         btn.textContent = opt;
         btn.addEventListener('click', () => {
-          if(i === q.a) quizScore++;
-          quizIndex++;
-          renderQuiz();
+          // Tüm butonları kilitle
+          quizOptionsEl.querySelectorAll('button').forEach(b => b.classList.add('quiz-opt-disabled'));
+          if(i === q.a){
+            btn.classList.add('quiz-opt-correct');
+            quizScore++;
+            setTimeout(() => { quizIndex++; renderQuiz(); }, 700);
+          } else {
+            btn.classList.add('quiz-opt-wrong');
+            // Doğru cevabı göster
+            quizOptionsEl.querySelectorAll('button')[q.a].classList.add('quiz-opt-correct');
+            setTimeout(() => { quizIndex++; renderQuiz(); }, 1400);
+          }
         });
         quizOptionsEl.appendChild(btn);
       });
@@ -280,7 +358,10 @@
     sendBtn.addEventListener('click', handleSend);
     userInput.addEventListener('keydown', (e) => { if(e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); handleSend(); } });
     resetBtn.addEventListener('click', () => {
+      // DÜZELTME 3: Sıfırlamada selectedAnimal da temizlenir
+      selectedAnimal = null;
       messages.innerHTML = '';
+      renderAnimals();
       addMessage('Sohbet sıfırlandı. Yeni bir soru sorabilirsin.', 'bot');
       extraNote.textContent = "Bir hayvan adı veya konu yazarak KUYAK'tan bilgi alabilirsin.";
     });
@@ -303,6 +384,54 @@
 
     renderAnimals();
     addMessage("Hazırım! Bir hayvan adı veya konu yazarak KUYAK'tan bilgi alabilirsin.", 'bot');
+
+    // Konu butonları
+    const topicBar = document.getElementById('topicBar');
+    const topicLabels = {
+      'hayatta kalma stratejileri':'🧊 Hayatta Kalma',
+      'besin yönetimi':'🐟 Besin',
+      'kamuflaj ve uyum':'🎭 Kamuflaj',
+      'sessizlik ve enerji yönetimi':'⚡ Enerji',
+      'riskten kaçınma':'🚨 Risk',
+      'yön bulma ve alan okuma':'🧭 Yön Bulma',
+      'göç ve hareket stratejileri':'🏔️ Göç',
+      'topluluk ve iş birliği':'🤝 İş Birliği'
+    };
+    Object.entries(topicLabels).forEach(([key, label]) => {
+      const btn = document.createElement('button');
+      btn.className = 'topic-btn';
+      btn.textContent = label;
+      btn.addEventListener('click', () => {
+        if(!selectedAnimal){
+          addMessage(label, 'user');
+          addMessage('Önce bir hayvan seçmelisin — listeden tıkla ya da adını yaz.', 'bot');
+          extraNote.textContent = 'Hayvan seçilmedi.';
+          return;
+        }
+        const animal = animalData[selectedAnimal];
+        addMessage(label, 'user');
+        addMessage(`<strong>${animal.label}</strong> — <strong>${topicMap[key]}</strong><br>${animal.info[key]}`, 'bot');
+        extraNote.textContent = 'Konu yanıtlandı.';
+      });
+      topicBar.appendChild(btn);
+    });
+
+    // Placeholder döngüsü
+    const placeholders = [
+      'Örn: kutup ayısı besin yönetimi',
+      'Örn: narval göç stratejisi',
+      'Örn: beyaz tilki kamuflaj',
+      'Örn: misk öküzü savunma',
+      'Örn: ren geyiği yön bulma',
+      'Örn: kar baykuşu enerji',
+      'Örn: pufla iş birliği',
+      'Örn: mors riskten kaçınma',
+    ];
+    let phIndex = 0;
+    setInterval(() => {
+      phIndex = (phIndex + 1) % placeholders.length;
+      userInput.placeholder = placeholders[phIndex];
+    }, 3000);
   </script>
 </body>
 </html>
